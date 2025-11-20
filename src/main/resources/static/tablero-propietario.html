@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablero del propietario</title>
+    <link rel="stylesheet" href="/login.css">
+    <style>
+        :root {
+            --bg: #f4f6fb;
+            --card: #fff;
+            --muted: #6b7280;
+            --accent: #3b82f6;
+            --danger: #ef4444
+        }
+
+        body {
+            font-family: Inter, Arial, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            color: #222
+        }
+
+        .wrap {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 20px;
+            color: #1f2937
+        }
+
+        .topbar a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600
+        }
+
+        .summary {
+            display: flex;
+            gap: 16px;
+            margin-top: 18px
+        }
+
+        .summary .card {
+            flex: 1;
+            background: var(--card);
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06)
+        }
+
+        .card .label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em
+        }
+
+        .card .value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 8px
+        }
+
+        .panels {
+            display: flex;
+            gap: 16px;
+            margin-top: 18px
+        }
+
+        .panel {
+            flex: 1;
+            background: var(--card);
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06)
+        }
+
+        .panel h3 {
+            margin: 0 0 12px 0
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: left
+        }
+
+        th {
+            background: #f8fafc;
+            color: #374151
+        }
+
+        .transitos {
+            margin-top: 18px;
+            background: var(--card);
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06)
+        }
+
+        .notifications {
+            margin-top: 18px;
+            padding: 0
+        }
+
+        .not-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px;
+            background: var(--card);
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06)
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff
+        }
+
+        @media(max-width:900px) {
+            .summary {
+                flex-direction: column
+            }
+
+            .panels {
+                flex-direction: column
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="topbar">
+            <h1>Tablero de control del propietario</h1>
+            <a id="linkSalir" href="#">Salir</a>
+        </div>
+
+        <div class="summary" aria-label="Resumen del propietario">
+            <div class="card">
+                <div class="label">Nombre completo</div>
+                <div id="lbNombreCompleto" class="value">-</div>
+            </div>
+            <div class="card">
+                <div class="label">Estado</div>
+                <div id="lbEstado" class="value">-</div>
+            </div>
+            <div class="card">
+                <div class="label">Saldo actual</div>
+                <div id="lbSaldo" class="value">-</div>
+            </div>
+        </div>
+
+        <div class="panels">
+            <div class="panel">
+                <h3>Bonificaciones asignadas</h3>
+                <div id="divBonificaciones">Cargando...</div>
+            </div>
+            <div class="panel">
+                <h3>Vehículos registrados</h3>
+                <div id="divVehiculos">Cargando...</div>
+            </div>
+        </div>
+
+        <div class="transitos">
+            <h3>Tránsitos realizados</h3>
+            <div id="divTransitos">Cargando...</div>
+        </div>
+
+        <div class="notifications">
+            <div class="not-row">
+                <div>
+                    <h3 style="margin:0">Notificaciones del sistema</h3>
+                </div>
+                <div>
+                    <button id="btnBorrarNotificaciones" class="btn btn-danger">Borrar notificaciones</button>
+                </div>
+            </div>
+            <div id="divNotificaciones" style="margin-top:12px"></div>
+        </div>
+    </div>
+
+    <script>
+        const urlDatos = '/propietario/datos';
+        const urlVistaConectada = '/propietario/vistaConectada';
+        const urlBorrarNotificaciones = '/propietario/borrarNotificaciones';
+        const urlLogout = '/login/logoutPropietario';
+
+        async function cargar() {
+            try {
+                const r = await fetch(urlDatos, { method: 'GET', credentials: 'same-origin' });
+                if (r.ok) {
+                    const d = await r.json();
+                    renderAll(d);
+                    return;
+                }
+                const errText = await r.text();
+                console.error('Error /propietario/datos', r.status, errText);
+                if (r.status === 400 || r.status === 401 || r.status === 500) {
+                    try { await mostrarMensaje(errText || 'Sesión inválida'); } catch (ignore) { }
+                    window.location.href = '/login-propietario.html';
+                    return;
+                }
+            } catch (e) {
+                console.warn('No hay endpoint /propietario/datos o error de red, intentando /propietario/vistaConectada', e);
+            }
+
+            try {
+                const r2 = await fetch(urlVistaConectada, { method: 'POST', credentials: 'same-origin' });
+                if (r2.ok) {
+                    const arr = await r2.json();
+                    let nombre = '';
+                    for (const item of arr) {
+                        if (item.id === 'nombrePropietario') nombre = item.parametro;
+                    }
+                    document.getElementById('lbNombreCompleto').textContent = nombre || '-';
+                    document.getElementById('lbEstado').textContent = '-';
+                    document.getElementById('lbSaldo').textContent = '-';
+                    document.getElementById('divBonificaciones').innerHTML = '<p>No hay datos disponibles.</p>';
+                    document.getElementById('divVehiculos').innerHTML = '<p>No hay datos disponibles.</p>';
+                    document.getElementById('divTransitos').innerHTML = '<p>No hay datos disponibles.</p>';
+                    document.getElementById('divNotificaciones').innerHTML = '<p>No hay datos disponibles.</p>';
+                } else {
+                    throw new Error('Error ' + r2.status);
+                }
+            } catch (e) {
+                document.body.innerHTML = '<p>Error al cargar la vista: ' + e + '</p>';
+            }
+        }
+
+        function renderAll(d) {
+            document.getElementById('lbNombreCompleto').textContent =
+                d.nombre && d.apellido ? (d.nombre + ' ' + d.apellido) : (d.nombre || d.apellido || '-');
+            document.getElementById('lbEstado').textContent = d.estado || '-';
+            document.getElementById('lbSaldo').textContent =
+                (typeof d.saldo !== 'undefined') ? ('$ ' + Number(d.saldo).toFixed(2)) : '-';
+
+            renderBonificaciones(d.bonificaciones || []);
+            renderVehiculos(d.vehiculos || d.vehiculosRegistrados || []);
+            renderTransitos(d.transitos || []);
+            renderNotificaciones(d.notificaciones || []);
+        }
+
+        function renderBonificaciones(list) {
+            const c = document.getElementById('divBonificaciones');
+            if (!list.length) {
+                c.innerHTML = '<p>No hay bonificaciones asignadas.</p>';
+                return;
+            }
+            let html = '<table><thead><tr><th>Bonificación</th><th>Puesto</th><th>Fecha</th></tr></thead><tbody>';
+            for (const b of list) {
+                html += `<tr><td>${esc(b.bonificacion || b.nombre || '')}</td><td>${esc(b.puesto || '')}</td><td>${esc(b.fecha || '')}</td></tr>`;
+            }
+            html += '</tbody></table>';
+            c.innerHTML = html;
+        }
+
+        function renderVehiculos(list) {
+            const c = document.getElementById('divVehiculos');
+            if (!list.length) {
+                c.innerHTML = '<p>No hay vehículos registrados.</p>';
+                return;
+            }
+            let html = '<table><thead><tr><th>Matrícula</th><th>Modelo</th><th>Color</th><th>Tránsitos</th><th>Monto total</th></tr></thead><tbody>';
+            for (const v of list) {
+                html += `<tr><td>${esc(v.matricula || '')}</td><td>${esc(v.modelo || '')}</td><td>${esc(v.color || '')}</td><td>${esc(v.transitos || '0')}</td><td>${esc(v.montoTotal ? ('$ ' + Number(v.montoTotal).toFixed(2)) : '')}</td></tr>`;
+            }
+            html += '</tbody></table>';
+            c.innerHTML = html;
+        }
+
+        function renderTransitos(list) {
+            const c = document.getElementById('divTransitos');
+            if (!list.length) {
+                c.innerHTML = '<p>No hay tránsitos realizados.</p>';
+                return;
+            }
+            let html = '<table><thead><tr>' +
+                '<th>Puesto</th><th>Matrícula</th><th>Categoría</th>' +
+                '<th>Monto tarifa</th><th>Bonificación</th><th>Monto bonificación</th><th>Monto pagado</th>' +
+                '<th>Fecha</th><th>Hora</th></tr></thead><tbody>';
+
+            for (const t of list) {
+                const fecha = t.fecha || '';
+                const hora = t.hora || '';
+
+                // monto bonificado (del DTO: montoBonificado)
+                const montoBonRaw = (typeof t.montoBonificado !== 'undefined' && t.montoBonificado !== null)
+                    ? Number(t.montoBonificado)
+                    : null;
+                let montoBonFmt = '';
+                if (montoBonRaw !== null) {
+                    if (montoBonRaw < 0) montoBonFmt = '-$ ' + Math.abs(montoBonRaw).toFixed(2);
+                    else montoBonFmt = '$ ' + montoBonRaw.toFixed(2);
+                }
+
+                // monto pagado (del DTO: montoPagado)
+                const montoPagRaw = (typeof t.montoPagado !== 'undefined' && t.montoPagado !== null)
+                    ? Number(t.montoPagado)
+                    : null;
+                const montoPagFmt = (montoPagRaw !== null) ? '$ ' + montoPagRaw.toFixed(2) : '';
+
+                html += `<tr>
+                    <td>${esc(t.puesto || '')}</td>
+                    <td>${esc(t.matricula || '')}</td>
+                    <td>${esc(t.categoria || '')}</td>
+                    <td>${t.montoTarifa ? ('$ ' + Number(t.montoTarifa).toFixed(2)) : ''}</td>
+                    <td>${esc(t.bonificacion || '')}</td>
+                    <td>${esc(montoBonFmt)}</td>
+                    <td>${esc(montoPagFmt)}</td>
+                    <td>${esc(fecha)}</td>
+                    <td>${esc(hora)}</td>
+                </tr>`;
+            }
+            html += '</tbody></table>';
+            c.innerHTML = html;
+        }
+
+        function renderNotificaciones(list) {
+            const c = document.getElementById('divNotificaciones');
+            if (!list.length) {
+                c.innerHTML = '<p style="padding:12px">No hay notificaciones.</p>';
+                return;
+            }
+            let html = '<ul style="list-style:none;padding:12px;margin:0">';
+            for (const n of list) {
+                html += `<li style="padding:8px 0;border-bottom:1px solid #f1f5f9">${esc(n.mensaje || n.texto || '')}</li>`;
+            }
+            html += '</ul>';
+            c.innerHTML = html;
+        }
+
+        document.getElementById('btnBorrarNotificaciones').addEventListener('click', async function () {
+            if (!confirm('¿Borrar todas las notificaciones?')) return;
+            try {
+                const r = await fetch(urlBorrarNotificaciones, { method: 'POST', credentials: 'same-origin' });
+                if (r.ok) { alert('Notificaciones borradas'); cargar(); }
+                else alert('Error al borrar: ' + r.status);
+            } catch (e) { alert('Error de red: ' + e); }
+        });
+
+        document.getElementById('linkSalir').addEventListener('click', async function (e) {
+            e.preventDefault();
+            try {
+                const r = await fetch(urlLogout, { method: 'POST', credentials: 'same-origin' });
+                if (r.ok) window.location.href = '/login-propietario.html';
+                else alert('Error al cerrar sesión');
+            } catch (e) { alert('Error de red'); }
+        });
+
+        function esc(s) {
+            return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        }
+
+        // iniciar
+        cargar();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operación Exitosa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        .success-container {
+            text-align: center;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .success-icon {
+            color: #28a745;
+            font-size: 48px;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="success-container">
+        <div class="success-icon">✓</div>
+        <h1>¡Operación Exitosa!</h1>
+        <p>La operación se ha completado correctamente.</p>
+        <a href="/" class="back-button">Volver al inicio</a>
+        <button id="logout-button" class="back-button" style="margin-left:8px; background-color:#dc3545;">Cerrar
+            sesión</button>
+    </div>
+    <script>
+        document.getElementById('logout-button').addEventListener('click', async function (e) {
+            e.preventDefault();
+            try {
+                const resp = await fetch('/login/logoutPropietario', { method: 'POST' });
+                if (resp.ok) {
+                    // Try to parse JSON response and redirect to provided route, fallback to login page
+                    try {
+                        const data = await resp.json();
+                        if (Array.isArray(data) && data.length > 0 && data[0].ruta) {
+                            // If controller returns a Respuesta with a ruta, navigate to it
+                            window.location = '/' + data[0].ruta;
+                        } else {
+                            window.location = '/login-propietario.html';
+                        }
+                    } catch (err) {
+                        window.location = '/login-propietario.html';
+                    }
+                } else {
+                    alert('Error al cerrar sesión: ' + resp.status);
+                }
+            } catch (err) {
+                alert('Error de red: ' + err);
+            }
+        });
+    </script>
+</body>
+
+</html>
