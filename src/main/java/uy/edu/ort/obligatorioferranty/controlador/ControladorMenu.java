@@ -35,7 +35,8 @@ public class ControladorMenu {
     @PostMapping("/vistaConectada")
     public List<Respuesta> inicializarVista(@SessionAttribute(name = "usuarioAdministrador") Sesion sesion) {
 
-        return Respuesta.lista(new Respuesta("admin", sesion.getUsuarioAdministrador().getNombreCompleto()));
+        return Respuesta
+                .lista(new Respuesta("nombreCompletoAdmin", sesion.getUsuarioAdministrador().getNombreCompleto()));
 
     }
 

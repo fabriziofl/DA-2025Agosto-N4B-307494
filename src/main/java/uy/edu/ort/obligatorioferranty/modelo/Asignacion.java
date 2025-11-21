@@ -1,6 +1,5 @@
 package uy.edu.ort.obligatorioferranty.modelo;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Asignacion {

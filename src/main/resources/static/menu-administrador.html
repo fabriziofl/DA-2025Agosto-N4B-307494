@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel administrador</title>
+    <link rel="stylesheet" href="estilos.css">
+    <script src="vistaWeb.js"></script>
+    <script src="sse.js"></script>
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --bg-soft: #020617;
+            --sidebar: #020617;
+            --sidebar-border: #1e293b;
+            --accent: #38bdf8;
+            --accent-soft: rgba(56, 189, 248, 0.14);
+            --accent-strong: #0ea5e9;
+            --text: #e5e7eb;
+            --text-muted: #9ca3af;
+            --danger: #ef4444;
+            --card-bg: #020617;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1e293b, #020617 50%, #000000 100%);
+            color: var(--text);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            background: linear-gradient(180deg, #020617 0%, #020617 40%, #020617 100%);
+            border-right: 1px solid var(--sidebar-border);
+            padding: 18px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 55%);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .sidebar-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 6px 14px 6px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+            margin-bottom: 12px;
+        }
+
+        .sidebar-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 20%, #38bdf8, #0f172a 65%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #e5f2ff;
+            font-size: 18px;
+            box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.3), 0 12px 30px rgba(15, 23, 42, 0.8);
+        }
+
+        .sidebar-title {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar-title span:first-child {
+            font-size: 13px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .sidebar-title span:last-child {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e5e7eb;
+        }
+
+        .sidebar-user {
+            margin-top: 8px;
+            padding: 8px 8px 10px 8px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.8);
+        }
+
+        .sidebar-user-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        #nombreCompletoAdmin {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #e5e7eb;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-menu {
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(148, 163, 184, 0.16);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .menu-group-label {
+            margin: 8px 4px 4px 4px;
+            font-size: 11px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .sidebar-button {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 9px 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.04s ease;
+            text-align: left;
+        }
+
+        .sidebar-button span.icon {
+            width: 22px;
+            display: inline-flex;
+            justify-content: center;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .sidebar-button:hover {
+            background: rgba(15, 23, 42, 0.95);
+            color: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        .sidebar-button.active {
+            background: var(--accent-soft);
+            color: var(--accent-strong);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3), 0 8px 24px rgba(15, 23, 42, 0.9);
+        }
+
+        .sidebar-spacer {
+            flex: 1;
+        }
+
+        .sidebar-footer {
+            padding-top: 8px;
+            border-top: 1px solid rgba(148, 163, 184, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sidebar-footer small {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .sidebar-button.logout {
+            color: #fecaca;
+        }
+
+        .sidebar-button.logout:hover {
+            background: rgba(127, 29, 29, 0.7);
+            color: #fee2e2;
+        }
+
+        /* CONTENT */
+
+        .content {
+            padding: 18px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .content-frame-wrapper {
+            flex: 1;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            box-shadow: 0 22px 60px rgba(15, 23, 42, 0.9);
+            background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), #020617 60%);
+        }
+
+        #contenidoFrame {
+            width: 100%;
+            height: calc(100vh - 70px);
+            border: none;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                flex-direction: row;
+                align-items: stretch;
+                overflow-x: auto;
+            }
+
+            .sidebar-inner {
+                flex-direction: row;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .sidebar-header {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+
+            .sidebar-user,
+            .sidebar-footer {
+                display: none;
+            }
+
+            .sidebar-menu {
+                flex-direction: row;
+                border-top: none;
+                margin-top: 0;
+                padding-top: 0;
+            }
+
+            .sidebar-button {
+                white-space: nowrap;
+            }
+
+            .content {
+                padding: 12px;
+            }
+
+            .content-frame-wrapper {
+                border-radius: 12px;
+            }
+
+            #contenidoFrame {
+                height: calc(100vh - 120px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-inner">
+                <div>
+                    <div class="sidebar-header">
+                        <div class="sidebar-logo">AD</div>
+                        <div class="sidebar-title">
+                            <span>Panel</span>
+                            <span>Administrador</span>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-user">
+                        <div class="sidebar-user-label">Sesión actual</div>
+                        <label id="nombreCompletoAdmin">ADMINISTRADOR</label>
+                    </div>
+
+                    <nav class="sidebar-menu">
+                        <div class="menu-group-label">Operaciones</div>
+
+                        <button class="sidebar-button active" data-page="emular-transito.html"
+                            onclick="cargarContenido('emular-transito.html', this)">
+                            <span class="icon">🚗</span>
+                            <span>Emular tránsito</span>
+                        </button>
+
+                        <button class="sidebar-button" data-page="asignar-bonificaciones.html"
+                            onclick="cargarContenido('asignar-bonificaciones.html', this)">
+                            <span class="icon">🎯</span>
+                            <span>Asignar bonificaciones</span>
+                        </button>
+
+                        <button class="sidebar-button" data-page="cambiar-estado-propietario.html"
+                            onclick="cargarContenido('cambiar-estado-propietario.html', this)">
+                            <span class="icon">⚙️</span>
+                            <span>Cambiar estado propietario</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="sidebar-spacer"></div>
+
+                <div class="sidebar-footer">
+                    <button class="sidebar-button logout" onclick="logout()">
+                        <span class="icon">⏻</span>
+                        <span>Salir de la aplicación</span>
+                    </button>
+                    <small>Sesión segura · SSE activo mientras esta ventana esté abierta.</small>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="content">
+            <div class="content-frame-wrapper">
+                <!-- Vista inicial: Emular tránsito -->
+                <iframe id="contenidoFrame" src="vista-exito.html"></iframe>
+            </div>
+        </main>
+    </div>
+
+    <script src="utilesVista.js"></script>
+    <script>
+        // URLs para integrarse con tu backend
+        urlIniciarVista = "/menu/vistaConectada";
+        //urlCierreVista = "/login/logoutAdministrador";
+        urlRegistroSSE = "/menu/registrarSSE";
+
+        const spnNombreCompletoAdmin = document.getElementById("nombreCompletoAdmin");
+
+        function cargarContenido(pagina, boton) {
+            document.getElementById('contenidoFrame').src = pagina;
+
+            // marcar activo en el menú
+            const botones = document.querySelectorAll('.sidebar-button');
+            botones.forEach(b => b.classList.remove('active'));
+            if (boton) {
+                boton.classList.add('active');
+            } else {
+                // fallback: marcar el que matchea data-page
+                const match = document.querySelector(`.sidebar-button[data-page="${pagina}"]`);
+                if (match) match.classList.add('active');
+            }
+        }
+
+        // Hook que se invoca desde el backend a través de vistaWeb.js
+        function mostrar_nombreCompletoAdmin(nombreCompleto) {
+            spnNombreCompletoAdmin.textContent = (nombreCompleto || "ADMINISTRADOR").toUpperCase();
+        }
+
+        function logout() {
+            submit('/login/logoutAdministrador');
+        }
+
+        function mostrar_logoutExitoso(urlDestino) {
+            // urlDestino viene de la Respuesta del backend: "login-administrador.html"
+            window.location.href = urlDestino;
+        }
+
+        function procesarErrorSubmit(status, text) {
+            if (status === 400 || status === 401) {
+                window.location.href = "login-administrador.html";
+            } else {
+                try {
+                    mostrarMensaje(text || "Error al procesar la operación");
+                } catch (e) {
+                    alert("Error al procesar la operación");
+                }
+            }
+        }
+
+        function procesarMensajeSSE(mensaje) {
+            const iframe = document.getElementById('contenidoFrame');
+            const iframeWindow = iframe.contentWindow;
+            if (iframeWindow && typeof iframeWindow.procesarResultadosSubmit === "function") {
+                iframeWindow.procesarResultadosSubmit(mensaje);
+            }
+        }
+
+        function conexionSSECerrada(event) {
+            cerrarPanel();
+        }
+
+        async function cerrarPanel() {
+            let respuesta = await mostrarConfirmacion(
+                "Se ha cerrado la aplicación en esta ventana",
+                "Intentar volver a abrirla",
+                "Cerrar"
+            );
+            if (respuesta) {
+                location.reload();
+            } else {
+                document.body.innerHTML = '';
+            }
+        }
+    </script>
+</body>
+
+</html>

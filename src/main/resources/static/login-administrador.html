@@ -7,12 +7,28 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Propietario</title>
-    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="estilos.css">
     <script src='vistaWeb.js'></script>
 </head>
 
 <body>
     <script src="utilesVista.js"></script>
+
+    <!-- Diálogo de mensajes reutilizable -->
+    <div id="mensajeDlg" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); 
+               align-items:center; justify-content:center; z-index:9999;">
+        <div
+            style="background:#fff; padding:20px 24px; border-radius:8px; min-width:280px; max-width:400px; box-shadow:0 10px 30px rgba(15,23,42,.25);">
+            <p id="textoMensaje" style="margin:0 0 16px 0; font-family:Arial, sans-serif;"></p>
+            <div style="text-align:right">
+                <button id="botonAceptar"
+                    style="padding:6px 14px; border-radius:6px; border:none; background:#2563eb; color:#fff; cursor:pointer;">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="login-container">
         <h2 id="titulo"></h2>
         <form id="formLogin" action="/loginAdministrador" method="post" onsubmit="handleLogin(event)">
@@ -28,6 +44,7 @@
         </form>
     </div>
 </body>
+
 <script>
 
     const TITULO_PAGINA = "Ingreso al Dashboard de Administradores";

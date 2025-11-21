@@ -23,19 +23,19 @@ public class SistemaAcceso {
         administradores.add(nuevoAdministrador);
     }
 
-    public Sesion loginPropietario(String documento, String contrasenia, Estado estado) throws Exception {
+    public Sesion loginPropietario(String documento, String contrasenia, Estado estado) throws PeajeException {
         Sesion sesion = null;
         UsuarioPropietario usuario = (UsuarioPropietario) login(documento, contrasenia, propietarios);
 
         if (usuario == null) {
-            throw new Exception("Acceso denegado");
+            throw new PeajeException("Acceso denegado");
         }
         // Verificar estado del usuario
         // Si el estado es Deshabilitado, no puede ingresar al sistema
 
         if (usuario.getEstado() instanceof EstadoDeshabilitado) {
             // Curso alternativo: usuario deshabilitado
-            throw new Exception("Usuario deshabilitado, no puede ingresar al sistema");
+            throw new PeajeException("Usuario deshabilitado, no puede ingresar al sistema");
         }
 
         sesion = new Sesion(usuario);
@@ -43,12 +43,12 @@ public class SistemaAcceso {
         return sesion;
     }
 
-    public Sesion loginAdministrador(String documento, String contrasenia) throws Exception {
+    public Sesion loginAdministrador(String documento, String contrasenia) throws PeajeException {
         Sesion sesion = null;
         UsuarioAdministrador administrador = (UsuarioAdministrador) login(documento, contrasenia, administradores);
 
         if (administrador == null) {
-            throw new Exception("Acceso denegado");
+            throw new PeajeException("Acceso denegado");
         }
         // Verificar estado del usuario
         // Si el estado es Deshabilitado, no puede ingresar al sistema

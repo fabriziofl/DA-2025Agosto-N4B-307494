@@ -33,7 +33,7 @@ public class Fachada extends Observable {
         return sistemaAcceso.loginPropietario(documento, contrasenia, estado);
     }
 
-    public Sesion loginAdministrador(String documento, String contrasenia) throws Exception {
+    public Sesion loginAdministrador(String documento, String contrasenia) throws PeajeException {
         return sistemaAcceso.loginAdministrador(documento, contrasenia);
     }
 

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
 import uy.edu.ort.obligatorioferranty.modelo.Fachada;
+import uy.edu.ort.obligatorioferranty.modelo.PeajeException;
 import uy.edu.ort.obligatorioferranty.modelo.Sesion;
 
 import java.util.List;
@@ -44,21 +45,31 @@ public class ControladorLogin {
 
     @PostMapping("/loginAdministrador")
     public List<Respuesta> loginAdministrador(HttpSession sessionHttp, @RequestParam String documento,
-            @RequestParam String contrasenia) throws Exception {
+            @RequestParam String contrasenia) throws PeajeException {
         Sesion sesion = (Sesion) sessionHttp.getAttribute("usuarioAdministrador");
         if (sesion != null) {
-            throw new Exception("Ud. Ya está logueado”.");
+            // Curso alternativo: administrador ya logueado
+            return Respuesta.lista(
+                    new Respuesta("errorLogin", "Ud. ya está logueado"),
+                    new Respuesta("loginExitoso", "menu-administrador.html"));
         }
 
-        // login al modelo
-        sesion = (Sesion) Fachada.getInstancia().loginAdministrador(documento, contrasenia);
+        try {
+            // 2) Intentar login en la lógica
+            sesion = Fachada.getInstancia().loginAdministrador(documento, contrasenia);
 
-        // si hay una sesion abierta la cierro
-        logoutAdministrador(sessionHttp);
+            // 3) Guardar la sesión de la lógica en la sesión HTTP
+            sessionHttp.setAttribute("usuarioAdministrador", sesion);
 
-        // guardo la ssion de la logica en la sesion http
-        sessionHttp.setAttribute("usuarioAdministrador", sesion);
-        return Respuesta.lista(new Respuesta("loginExitoso", "vista-exito.html"));
+            // 4) Curso normal: ir al menú del administrador
+            return Respuesta.lista(
+                    new Respuesta("loginExitoso", "menu-administrador.html"));
+
+        } catch (PeajeException e) {
+            // Curso alternativo: credenciales inválidas ("Acceso denegado")
+            return Respuesta.lista(
+                    new Respuesta("errorLogin", e.getMessage()));
+        }
     }
 
     @PostMapping("/logoutAdministrador")
