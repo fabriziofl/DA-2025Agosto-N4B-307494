@@ -1,6 +1,7 @@
 package uy.edu.ort.obligatorioferranty.modelo;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -10,6 +11,7 @@ public class Fachada extends Observable {
 
     private SistemaAcceso sistemaAcceso = new SistemaAcceso();
     private SistemaAsignacion sistemaAsignacion = new SistemaAsignacion();
+    private SistemaPuesto sistemaPuestos = new SistemaPuesto();
 
     // singleton
     private static Fachada instancia = new Fachada();
@@ -22,6 +24,10 @@ public class Fachada extends Observable {
     }
 
     // DELEGACIONES
+
+    public List<Puesto> getPuestos() {
+        return sistemaPuestos.getPuestos();
+    }
 
     public Sesion loginPropietario(String documento, String contrasenia, Estado estado) throws Exception {
         return sistemaAcceso.loginPropietario(documento, contrasenia, estado);

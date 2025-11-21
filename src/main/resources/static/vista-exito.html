@@ -90,6 +90,31 @@
                 alert('Error de red: ' + err);
             }
         });
+
+
+
+        const urlDatos = '/administrador/emularTransito/listarPuestos';
+
+        async function cargar() {
+            try {
+                const r = await fetch(urlDatos, { method: 'GET', credentials: 'same-origin' });
+                if (r.ok) {
+                    const d = await r.json();
+                    renderAll(d);
+                    return;
+                }
+                const errText = await r.text();
+                console.error('administrador/emularTransito/listarPuestos', r.status, errText);
+                if (r.status === 400 || r.status === 401 || r.status === 500) {
+                    try { await mostrarMensaje(errText || 'Sesión inválida'); } catch (ignore) { }
+                    window.location.href = '/login-administrador.html';
+                    return;
+                }
+            } catch (e) {
+                console.warn('No hay endpoint /propietario/datos o error de red, intentando /propietario/vistaConectada', e);
+            }
+        }
+        cargar();
     </script>
 </body>
 

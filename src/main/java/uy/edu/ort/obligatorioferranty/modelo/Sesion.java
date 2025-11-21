@@ -9,6 +9,10 @@ public class Sesion {
     private UsuarioPropietario usuario;
     private UsuarioAdministrador usuarioAdmin;
 
+    public UsuarioAdministrador getUsuarioAdmin() {
+        return usuarioAdmin;
+    }
+
     public Sesion(UsuarioPropietario usuario) {
         this.usuario = usuario;
     }
@@ -23,6 +27,10 @@ public class Sesion {
 
     public UsuarioPropietario getUsuario() {
         return usuario;
+    }
+
+    public UsuarioAdministrador getUsuarioAdministrador() {
+        return usuarioAdmin;
     }
 
     public List<Asignacion> getAsignacionesActivas() {

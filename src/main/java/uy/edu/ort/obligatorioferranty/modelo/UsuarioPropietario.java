@@ -24,7 +24,7 @@ public class UsuarioPropietario extends Usuario {
         this.notificaciones = notificaciones;
         this.asignaciones = asignaciones;
         if (estado == null) {
-            this.estado = new EstadoHabilitado(); // esta bien tener un if aca?
+            this.estado = new EstadoHabilitado();
         }
         this.transitos = transitos;
     }
